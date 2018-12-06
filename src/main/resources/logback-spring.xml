@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <property name="logback.logdir" value="logs"/>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!--自定义log过滤器-->
+        <filter class="com.kc.test.filters.DemoActorFilter"/>
+        <!-- 控制台彩色打印-->
+        <withJansi>true</withJansi>
+        <encoder>
+            <pattern>[%thread] %highlight(%-5level) %cyan(%logger{15}) - %msg %n</pattern>
+        </encoder>
+    </appender>
+    <!--仅输出非error级别日志到指定文件的配置-->
+    <appender name="fileInfoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>
+                %d-%msg%n
+            </pattern>
+        </encoder>
+        <file>${logback.logdir}/log_info.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logback.logdir}/log_info-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+            <!-- 如果按天来回滚，则最大保存时间为365天，365天之前的都将被清理掉 -->
+            <maxHistory>365</maxHistory>
+            <!-- 日志总保存量为10GB -->
+            <totalSizeCap>1MB</totalSizeCap>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!--文件达到 最大128MB时会被压缩和切割 -->
+                <maxFileSize>4MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <!--仅输出error级别日志到指定文件的配置-->
+    <appender name="fileErrorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <pattern>
+                %d-%msg%n
+            </pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logback.logdir}/log_error.%d.log</fileNamePattern>
+        </rollingPolicy>
+    </appender>
+    <!--输出log中包含指定字符串的log到指定文件-->
+    <appender name="evaluatorFilter" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator>
+                <expression>return message.contains("schedulter");</expression>
+            </evaluator>
+            <OnMismatch>DENY</OnMismatch>
+            <OnMatch>ACCEPT</OnMatch>
+        </filter>
+        <encoder>
+            <pattern>
+                %d-%msg%n
+            </pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logback.logdir}/log_evaluator.%d.log</fileNamePattern>
+        </rollingPolicy>
+    </appender>
+    <!--输出符合自定义过滤器的log到指定文件-->
+    <appender name="simpleFilter" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="com.kc.test.filters.SimpleFilter">
+        </filter>
+        <encoder>
+            <pattern>
+                %d-%msg%n
+            </pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logback.logdir}/log_simpleFilter.%d.log</fileNamePattern>
+        </rollingPolicy>
+    </appender>
+    <!--通过匹配指定正则表达式的log到指定文件-->
+    <appender name="matchFilter" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator>
+                <matcher>
+                    <Name>odd</Name>
+                    <regex>counter=[13579]</regex>
+                </matcher>
+                <expression>odd.matches(formattedMessage)</expression>
+            </evaluator>
+            <OnMismatch>DENY</OnMismatch>
+            <OnMatch>ACCEPT</OnMatch>
+        </filter>
+        <encoder>
+            <pattern>
+                %d-%msg%n
+            </pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logback.logdir}/log_matchFilter.%d.log</fileNamePattern>
+        </rollingPolicy>
+    </appender>
+    <!--为每个用户生产一个日志文件-->
+    <appender name="SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator>
+            <Key>userid</Key>
+            <DefaultValue>log.all</DefaultValue>
+        </discriminator>
+
+        <sift>
+            <appender
+                    name="FILE-${userid}" class="com.kc.test.bean.MyFileAppender">
+                <File>logs/${userid}.log</File>
+                <Append>false</Append>
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <Pattern>%d [%thread] %-5level %logger{15} - %msg%n</Pattern>
+                </layout>
+            </appender>
+        </sift>
+    </appender>
+
+    <root>
+        <appender-ref ref="STDOUT"/>
+        <!--<appender-ref ref="simpleFilter"/>-->
+        <!--<appender-ref ref="fileErrorLog"/>-->
+        <appender-ref ref="fileInfoLog"/>
+        <!--<appender-ref ref="evaluatorFilter"/>-->
+        <!--<appender-ref ref="matchFilter"/>-->
+        <appender-ref ref="SIFT"/>
+    </root>
+</configuration>
