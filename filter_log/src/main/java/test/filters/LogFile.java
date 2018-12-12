@@ -1,7 +1,5 @@
-package com.kc.test.filters;
+package test.filters;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;

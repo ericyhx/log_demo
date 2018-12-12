@@ -1,4 +1,4 @@
-package com.kc.test.cfg;
+package test.cfg;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;

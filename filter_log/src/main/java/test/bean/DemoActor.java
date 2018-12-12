@@ -1,10 +1,8 @@
-package com.kc.test.bean;
+package test.bean;
 
 import akka.actor.AbstractActor;
-import com.kc.test.filters.LogFile;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-import org.slf4j.MarkerFactory;
 
 import java.time.Duration;
 

@@ -1,0 +1,111 @@
+<configuration scan="true">
+    <property name="LOG_PATH" value="logs"/>
+    <property name="history" value="history"/>
+    <property name="LOG_PATTERN_PLAIN"
+              value="%d %5p [%-20.20t{22}] -%-40.40logger{40}:%-4L - %m%n"/>
+
+    <contextName>RCS-SERVER</contextName>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <encoder>
+            <pattern>${LOG_PATTERN_PLAIN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    <appender name="LOG_AGV" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator>
+            <Key>agvId</Key>
+            <DefaultValue>server</DefaultValue>
+        </discriminator>
+        <sift>
+            <appender name="LOG_AGV_ALL" class="com.log.filter.log.MultiKeyRollingFileAppender">
+                <file>${LOG_PATH}/${agvId}/%X{module}.log</file>
+                <!--仅输出非error级别日志到指定文件的配置-->
+                <!--<filter class="ch.qos.logback.classic.filter.LevelFilter">-->
+                    <!--<level>ERROR</level>-->
+                    <!--<onMatch>DENY</onMatch>-->
+                    <!--<onMismatch>ACCEPT</onMismatch>-->
+                <!--</filter>-->
+                <rollingPolicy class="com.log.filter.log.MyTimeBasedRollingPolicy">
+                    <fileNamePattern>${LOG_PATH}/${agvId}/%X{module}_%d{yyyy-MM-dd-HH}.%i.gz</fileNamePattern>
+                    <maxHistory>7</maxHistory>
+                    <totalSizeCap>10GB</totalSizeCap>
+                    <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                        <maxFileSize>1MB</maxFileSize>
+                    </timeBasedFileNamingAndTriggeringPolicy>
+                </rollingPolicy>
+                <encoder>
+                    <pattern>${LOG_PATTERN_PLAIN}</pattern>
+                    <charset>UTF-8</charset>
+                </encoder>
+
+            </appender>
+        </sift>
+    </appender>
+    <!--<appender name="LOG_ERROR" class="ch.qos.logback.classic.sift.SiftingAppender">-->
+        <!--<discriminator>-->
+            <!--<Key>agvId</Key>-->
+            <!--<DefaultValue>error</DefaultValue>-->
+        <!--</discriminator>-->
+
+        <!--<sift>-->
+            <!--<appender name="LOG_AGV_ERROR" class="com.kc.evo.rcs.common.utils.log.MultiKeyRollingFileAppender">-->
+                <!--<file>${LOG_PATH}/${agvId}/${agvId}_error.log</file>-->
+                <!--&lt;!&ndash;仅输出error级别日志到指定文件的配置&ndash;&gt;-->
+                <!--<filter class="ch.qos.logback.classic.filter.LevelFilter">-->
+                    <!--<level>ERROR</level>-->
+                    <!--<onMatch>ACCEPT</onMatch>-->
+                    <!--<onMismatch>DENY</onMismatch>-->
+                <!--</filter>-->
+                <!--<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+                    <!--<fileNamePattern>${LOG_PATH}/${agvId}/${agvId}_error%d{yyyy-MM-dd-HH}.%i.gz</fileNamePattern>-->
+                    <!--<maxHistory>7</maxHistory>-->
+                    <!--<totalSizeCap>1GB</totalSizeCap>-->
+                    <!--<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">-->
+                        <!--<maxFileSize>128MB</maxFileSize>-->
+                    <!--</timeBasedFileNamingAndTriggeringPolicy>-->
+                <!--</rollingPolicy>-->
+                <!--<encoder>-->
+                    <!--<pattern>${LOG_PATTERN_PLAIN}</pattern>-->
+                    <!--<charset>UTF-8</charset>-->
+                <!--</encoder>-->
+
+            <!--</appender>-->
+        <!--</sift>-->
+    <!--</appender>-->
+    <appender name="LOG_COMMUNICATION" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/communication/log_communication.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/communication/log_communication_%d{yyyy-MM-dd-HH}.%i.gz</fileNamePattern>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>128MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN_PLAIN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    <!--
+    打印全部的日志,注意默认级别是INFO
+    子Logger级别会覆盖默认级别
+    在appender中使用过滤器过滤INFO级别以下的
+    -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="LOG_AGV"/>
+        <!--<appender-ref ref="LOG_ERROR"/>-->
+    </root>
+    <logger name="com.kc.evo.rcs.hermes" level="DEBUG">
+        <appender-ref ref="LOG_COMMUNICATION"/>
+    </logger>
+    <logger name="io.netty" level="DEBUG">
+        <appender-ref ref="LOG_COMMUNICATION"/>
+    </logger>
+
+</configuration>

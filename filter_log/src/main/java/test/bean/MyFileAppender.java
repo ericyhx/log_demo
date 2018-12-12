@@ -1,4 +1,4 @@
-package com.kc.test.bean;
+package test.bean;
 
 import ch.qos.logback.core.FileAppender;
 
